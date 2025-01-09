@@ -1,19 +1,13 @@
-# README
+# Merlin
 
-## About
+## Sobre
 
-This is the official Wails React-TS template.
+Este é um projeto de uma aplicação desktop para gestão de centros automotivos, desenvolvido utilizando **Wails**, **Go**, e **React**. O objetivo da aplicação é permitir que o autocenter gerencie de forma simples e eficiente faturas de serviços automotivos, mantendo um sistema rápido, simples e amigável.
 
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
+## Dependências
 
-## Live Development
+Certifique-se de ter as seguintes ferramentas instaladas no seu ambiente de desenvolvimento:
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
-
-## Building
-
-To build a redistributable, production mode package, use `wails build`.
+- **Go** (versão 1.19 ou superior) – [Download](https://go.dev/dl/)
+- **Node.js** (versão 16 ou superior) – [Download](https://nodejs.org/)
+- **Wails CLI** (versão 2.9.2) - [Download](https://wails.io)
