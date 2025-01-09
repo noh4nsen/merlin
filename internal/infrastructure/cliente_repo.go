@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"merlin/internal/domain"
 	"merlin/internal/ports"
 
@@ -28,7 +29,7 @@ func (c *ClienteRepo) GetById(id string) (*domain.Cliente, error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		return nil, fmt.Errorf("erro ao buscar usuario pelo id %s: %v", id, err)
 	}
 
 	return &cliente, nil
@@ -40,21 +41,21 @@ func (c *ClienteRepo) Create(cliente *domain.Cliente) error {
 	cliente.Id = uuid.New().String()
 
 	_, err := c.db.Exec(query, cliente.Id, cliente.Nome, cliente.Telefone, cliente.Email)
-	return err
+	return fmt.Errorf("erro ao criar usuário de nome %s: %v", cliente.Nome, err)
 }
 
 func (c *ClienteRepo) Update(cliente *domain.Cliente) error {
 	query := "UPDATE clientes set nome = ?, telefone = ?, email = ? WHERE id = ?"
 
 	_, err := c.db.Exec(query, cliente.Nome, cliente.Telefone, cliente.Email, cliente.Id)
-	return err
+	return fmt.Errorf("erro ao atualizar usuario de id %s: %v", cliente.Id, err)
 }
 
 func (c *ClienteRepo) Delete(id string) error {
 	query := "DELETE FROM clientes WHERE id = ?"
 
 	_, err := c.db.Exec(query, id)
-	return err
+	return fmt.Errorf("erro ao deletar usuario de id %s: %v", id, err)
 }
 
 func (c *ClienteRepo) List() ([]*domain.Cliente, error) {
@@ -62,7 +63,7 @@ func (c *ClienteRepo) List() ([]*domain.Cliente, error) {
 
 	rows, err := c.db.Query(query)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("erro ao listar usuários: %v", err)
 	}
 	defer rows.Close()
 
@@ -71,7 +72,7 @@ func (c *ClienteRepo) List() ([]*domain.Cliente, error) {
 		var cliente domain.Cliente
 		err := rows.Scan(&cliente.Id, &cliente.Nome, &cliente.Telefone, &cliente.Email)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("erro ao varrer lista de usuários retornada pelo banco: %v", err)
 		}
 		clientes = append(clientes, &cliente)
 	}

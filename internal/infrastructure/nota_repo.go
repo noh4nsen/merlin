@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"merlin/internal/domain"
 	"merlin/internal/ports"
 	"time"
@@ -30,21 +31,21 @@ func (n *NotaRepo) GetById(id string) (*domain.Nota, error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		return nil, fmt.Errorf("erro ao buscar nota de id %s: %v", id, err)
 	}
 
 	nota.Data, err = time.Parse(time.RFC3339, dataStr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("erro ao transfomar data de nota: %v", err)
 	}
 
 	nota.Servicos, err = n.getServicosByNotaId(nota.Id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("erro ao buscar serviços atrelados a nota de id %s: %v", nota.Id, err)
 	}
 	nota.Partes, err = n.getPartesByNotaId(nota.Id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("erro ao buscar partes atreladas a nota de id %s: %v", nota.Id, err)
 	}
 
 	return &nota, nil
@@ -57,16 +58,16 @@ func (n *NotaRepo) Create(nota *domain.Nota) error {
 
 	_, err := n.db.Exec(query, nota.Id, nota.Cliente.Id, nota.Veiculo.Id, nota.Data.Format(time.RFC3339), nota.CustoTotal)
 	if err != nil {
-		return err
+		return fmt.Errorf("erro ao criar nova nota: %v", err)
 	}
 
 	err = n.insertServicos(nota.Id, nota.Servicos)
 	if err != nil {
-		return err
+		return fmt.Errorf("erro ao criar serviços atrelados a nova nota: %v", err)
 	}
 	err = n.insertPartes(nota.Id, nota.Partes)
 	if err != nil {
-		return err
+		return fmt.Errorf("erro ao criar partes atreladas a nova nota: %v", err)
 	}
 
 	return nil

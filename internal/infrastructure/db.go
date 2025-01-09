@@ -1,19 +1,58 @@
 package infrastructure
 
-import "database/sql"
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
 
-func NewDBConnection(dbFile string) (*sql.DB, error) {
+	_ "github.com/mattn/go-sqlite3" // SQLite driver
+)
+
+func NewDBConnection(appCtx context.Context) (*sql.DB, error) {
+	dataDir, err := getAppDataDirectory()
+	if err != nil {
+		return nil, fmt.Errorf("erro durante abertura de conexão com o banco: %v", err)
+	}
+	dbFile := filepath.Join(dataDir, "merlin.db")
+
 	db, err := sql.Open("sqlite3", dbFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("erro ao abrir conexão com o banco: %v", err)
 	}
 
 	err = createTables(db)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("erro durante abertura de conexão com o banco: %v", err)
 	}
 
 	return db, nil
+}
+
+func getAppDataDirectory() (string, error) {
+	var dataDir string
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("erro ao buscar diretório do usuário: %v", err)
+	}
+
+	switch runtime.GOOS {
+	case "windows":
+		dataDir = filepath.Join(os.Getenv("APPDATA"), "Merlin")
+	default:
+		dataDir = filepath.Join(homeDir, ".config", "Merlin")
+	}
+
+	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
+		err := os.MkdirAll(dataDir, 0755)
+		if err != nil {
+			return "", fmt.Errorf("erro ao criar diretorio de configuração: %v", err)
+		}
+	}
+
+	return dataDir, nil
 }
 
 func createTables(db *sql.DB) error {
@@ -60,7 +99,7 @@ func createTables(db *sql.DB) error {
 	for _, query := range queries {
 		_, err := db.Exec(query)
 		if err != nil {
-			return err
+			return fmt.Errorf("erro ao criar tabelas: %v", err)
 		}
 	}
 
